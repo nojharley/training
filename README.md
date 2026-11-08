@@ -126,7 +126,17 @@ use a demo account with fake data, and write a `module.yml` per process.
 ### Scheduling
 Push to GitHub, add `SYNTHESIA_API_KEY` as a repository secret, and the workflow
 runs weekly (or on demand, or from your app's release pipeline). It opens a pull
-request; merging it is the approval step.
+request; merging it is the approval step. The **Approve changes** button at the
+top of `review.html` opens that pull request.
+
+### Publishing
+Merging the review pull request runs `.github/workflows/publish.yml`, which turns
+each new release bundle into a GitHub Release (tag `<module>-v<version>`) with:
+the SCORM zip per language, a standalone MP4 per language (for an intranet,
+SharePoint or Teams), `artwork.png`, and `RELEASE.md` as the notes. Versions
+already released are skipped, so it is safe to re-run from the Actions tab.
+From there the KnowBe4 upload is manual (see `RELEASE.md`): KnowBe4 has no API
+for uploading content.
 
 ## Known prototype limits
 - Translations in `de.yml` are starter machine translations; a native speaker must review them.

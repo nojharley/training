@@ -1,0 +1,63 @@
+name: Publish release
+
+# Runs when an approved release lands on main (the review PR is merged) and
+# turns each release bundle in output/ into a GitHub Release: SCORM zips for
+# KnowBe4, a standalone MP4 per language, the artwork and the release notes.
+# Releases that already exist are skipped, so re-running is safe.
+
+on:
+  push:
+    branches: [main]
+    paths: ["output/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Create a GitHub Release for each unpublished version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          # Oldest first, so the newest version ends up as "Latest".
+          for dir in $(ls -d output/*/v*/ | sort -V); do
+            dir=${dir%/}
+            module=$(basename "$(dirname "$dir")")
+            version=$(basename "$dir")
+            tag="${module}-${version}"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "skip $tag (already published)"
+              continue
+            fi
+
+            files=()
+            for zip in "$dir"/*.zip; do
+              files+=("$zip")
+              mp4="$RUNNER_TEMP/$(basename "${zip%.zip}").mp4"
+              unzip -p "$zip" video.mp4 > "$mp4"
+              files+=("$mp4")
+            done
+            [ -f "$dir/artwork.png" ] && files+=("$dir/artwork.png")
+            if [ ${#files[@]} -eq 0 ]; then
+              echo "skip $tag (no packages)"
+              continue
+            fi
+
+            title=$(head -n 1 "$dir/RELEASE.md" | sed 's/^# *//')
+            gh release create "$tag" "${files[@]}" \
+              --title "$title" \
+              --notes-file "$dir/RELEASE.md" \
+              --target "$GITHUB_SHA"
+            echo "published $tag"
+          done
