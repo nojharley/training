@@ -146,6 +146,28 @@ def package(module, state, changes):
     return rel, version
 
 
+def _approve_url():
+    """Link to the open review pull request, where merging is the approval step.
+
+    In GitHub Actions the repo comes from GITHUB_SERVER_URL/GITHUB_REPOSITORY;
+    locally from the git remote. REVIEW_BRANCH matches the workflow's PR branch.
+    """
+    branch = os.environ.get("REVIEW_BRANCH", "training-refresh")
+    repo = None
+    if os.environ.get("GITHUB_REPOSITORY"):
+        repo = f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{os.environ['GITHUB_REPOSITORY']}"
+    else:
+        try:
+            url = subprocess.run(["git", "-C", str(ROOT), "remote", "get-url", "origin"],
+                                 capture_output=True, text=True, check=True).stdout.strip()
+            if "github.com" in url:
+                path = url.split("github.com", 1)[1].lstrip(":/").removesuffix(".git")
+                repo = f"https://github.com/{path}"
+        except (OSError, subprocess.CalledProcessError):
+            pass
+    return f"{repo}/pulls?q=is%3Apr+is%3Aopen+head%3A{branch}" if repo else None
+
+
 def _write_review(module, changes, rel):
     """Before/after page for the human reviewer (attach to the pull request)."""
     from common import STATE
@@ -169,15 +191,26 @@ def _write_review(module, changes, rel):
         rows.append(f"<section><h2>{loc.upper()} - {sid}</h2><p class='why'>{', '.join(c['reasons'])}</p>{flag}"
                     f"<div class='grid'>{''.join(cells)}</div><blockquote>{html.escape(script)}</blockquote></section>")
     body = "".join(rows) or "<p>No changes in this run.</p>"
+    url = _approve_url()
+    approve = (f"<a class='approve' href='{html.escape(url)}' target='_blank' rel='noopener'>Approve changes</a>"
+               f"<span class='hint'>Opens the review pull request on GitHub. Merging it approves these screens "
+               f"as the new baseline and releases this version.</span>" if url else
+               "<span class='hint'>To approve, merge the review pull request on GitHub.</span>")
+    approve = f"<div class='bar'>{approve}</div>" if changes else ""
     (rel / "review.html").write_text(f"""<!doctype html><meta charset="utf-8"><title>Review: {mid}</title>
-<style>body{{font-family:Arial,sans-serif;margin:24px;color:#1d2433}}h2{{font-size:17px;margin:0 0 4px}}
+<style>body{{font-family:Arial,sans-serif;margin:24px;color:#1d2433;background:#fff}}h2{{font-size:17px;margin:0 0 4px}}
+.top{{position:sticky;top:0;z-index:10;background:#fff;margin:-24px -24px 20px;padding:16px 24px 14px;
+border-bottom:1px solid #dde1e7;box-shadow:0 2px 6px rgba(29,36,51,.08)}}.top h1{{margin:0 0 4px;font-size:24px}}
+.top p{{margin:0 0 10px}}.bar{{display:flex;align-items:center;gap:14px;flex-wrap:wrap}}.hint{{color:#5b6475;font-size:14px}}
+.approve{{background:#1a7f5a;color:#fff;font-weight:bold;text-decoration:none;padding:10px 18px;border-radius:6px}}
+.approve:hover{{background:#146a4a}}
 section{{border:1px solid #dde1e7;border-radius:8px;padding:16px;margin-bottom:18px}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}}
 img{{width:100%;border:1px solid #ccc}}figcaption{{font-size:13px;color:#5b6475;margin-bottom:4px}}
 .why{{color:#5b6475;margin:0 0 8px}}.warn{{background:#fff3d6;color:#8a5a00;padding:8px 10px;border-radius:6px}}
 blockquote{{margin:12px 0 0;padding:8px 12px;border-left:3px solid #2c6ecb;background:#f4f5f7}}</style>
-<h1>Review: {html.escape(module['strings']['en']['module_title'])}</h1>
-<p>{len(changes)} scene/language change(s). Approve by merging the pull request.</p>{body}""", encoding="utf-8")
+<header class='top'><h1>Review: {html.escape(module['strings']['en']['module_title'])}</h1>
+<p>{len(changes)} scene/language change(s). Check each screen and its narration below.</p>{approve}</header>{body}""", encoding="utf-8")
 
 
 def _write_release_notes(module, version, changes, built, rel):
