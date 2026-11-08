@@ -1,0 +1,49 @@
+module_title: "Submitting an expense claim"
+module_description: "How to claim back business expenses in Expensly."
+sample_desc: "Taxi to Manchester Airport"
+sample_date: "28/10/2026"
+
+scenes:
+  s01-dashboard:
+    title: "Your expense claims"
+    script: >-
+      Welcome. In the next two minutes you'll learn how to claim back money you've spent on company business.
+      When you open Expensly, you land on My expense claims, which lists everything you've claimed so far and its status.
+  s02-new-claim:
+    title: "Start a new claim"
+    script: >-
+      To start, select New claim. This opens a blank expense claim form.
+  s03-fill-form:
+    title: "Fill in the details"
+    script: >-
+      Enter a short description, the date you spent the money, and the amount in pounds.
+      Then choose the category that best matches the expense, such as travel or meals.
+  s04-submit:
+    title: "Submit the claim"
+    script: >-
+      When everything looks right, select the button at the bottom of the form.
+      You'll see a confirmation message straight away.
+  s05-track:
+    title: "Track your claim"
+    script: >-
+      Back on your claims list, your new claim appears at the top with its current status.
+      Check here to see when it has been approved and paid. That's it, you're ready to make your first claim.
+
+quiz:
+  title: "Quick check"
+  intro: "Answer three questions to complete this module."
+  submit: "Check my answers"
+  passed: "Well done, you passed."
+  failed: "Not quite. Watch the video again and retry."
+  retry: "Try again"
+  answer_all: "Answer every question first."
+  score: "Score"
+  q1:
+    text: "Where do you start a new expense claim?"
+    options: {a: "From the Settings page", b: "By selecting New claim on My expense claims", c: "By emailing the finance team"}
+  q2:
+    text: "Which of these must you enter on the claim form?"
+    options: {a: "Description, date, amount and category", b: "Only the amount", c: "Your bank details"}
+  q3:
+    text: "Where can you check whether your claim has been paid?"
+    options: {a: "In your payslip only", b: "Nowhere, you have to ask", c: "In the status column of your claims list"}

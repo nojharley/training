@@ -1,0 +1,50 @@
+# Machine-translated starter text: needs native-speaker review before real use.
+module_title: "Spesenabrechnung einreichen"
+module_description: "So lassen Sie sich geschäftliche Ausgaben in Expensly erstatten."
+sample_desc: "Taxi zum Flughafen Manchester"
+sample_date: "28.10.2026"
+
+scenes:
+  s01-dashboard:
+    title: "Ihre Spesenabrechnungen"
+    script: >-
+      Willkommen. In den nächsten zwei Minuten erfahren Sie, wie Sie sich geschäftliche Ausgaben erstatten lassen.
+      Wenn Sie Expensly öffnen, sehen Sie die Seite Meine Spesenabrechnungen mit all Ihren bisherigen Abrechnungen und deren Status.
+  s02-new-claim:
+    title: "Neue Abrechnung beginnen"
+    script: >-
+      Wählen Sie zunächst Neue Abrechnung. Dadurch öffnet sich ein leeres Formular.
+  s03-fill-form:
+    title: "Angaben ausfüllen"
+    script: >-
+      Geben Sie eine kurze Beschreibung, das Datum der Ausgabe und den Betrag in Pfund ein.
+      Wählen Sie dann die passende Kategorie, zum Beispiel Reise oder Verpflegung.
+  s04-submit:
+    title: "Abrechnung absenden"
+    script: >-
+      Wenn alles stimmt, wählen Sie die Schaltfläche unten im Formular.
+      Sie erhalten sofort eine Bestätigung.
+  s05-track:
+    title: "Status verfolgen"
+    script: >-
+      In Ihrer Übersicht erscheint die neue Abrechnung ganz oben mit ihrem aktuellen Status.
+      Hier sehen Sie, wann sie genehmigt und ausgezahlt wurde. Das war's, Sie können jetzt Ihre erste Abrechnung einreichen.
+
+quiz:
+  title: "Kurzer Test"
+  intro: "Beantworten Sie drei Fragen, um dieses Modul abzuschließen."
+  submit: "Antworten prüfen"
+  passed: "Gut gemacht, Sie haben bestanden."
+  failed: "Noch nicht ganz. Sehen Sie sich das Video erneut an und versuchen Sie es noch einmal."
+  retry: "Erneut versuchen"
+  answer_all: "Bitte beantworten Sie zuerst alle Fragen."
+  score: "Ergebnis"
+  q1:
+    text: "Wo beginnen Sie eine neue Spesenabrechnung?"
+    options: {a: "Auf der Seite Einstellungen", b: "Mit Neue Abrechnung auf der Seite Meine Spesenabrechnungen", c: "Per E-Mail an die Buchhaltung"}
+  q2:
+    text: "Was müssen Sie im Formular angeben?"
+    options: {a: "Beschreibung, Datum, Betrag und Kategorie", b: "Nur den Betrag", c: "Ihre Bankverbindung"}
+  q3:
+    text: "Wo sehen Sie, ob Ihre Abrechnung ausgezahlt wurde?"
+    options: {a: "Nur auf Ihrer Gehaltsabrechnung", b: "Nirgends, Sie müssen nachfragen", c: "In der Statusspalte Ihrer Abrechnungsübersicht"}

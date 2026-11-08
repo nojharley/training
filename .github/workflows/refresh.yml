@@ -1,0 +1,67 @@
+name: Training refresh
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"     # Mondays 06:17 UTC
+  workflow_dispatch:          # run by hand, or call from the app's release pipeline
+    inputs:
+      live:
+        description: "Render with Synthesia (uses credits)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Capture, render, package
+        env:
+          SYNTHESIA_API_KEY: ${{ secrets.SYNTHESIA_API_KEY }}
+          SYNTHESIA_TEST_MODE: "false"
+        run: |
+          for m in modules/*/; do
+            python pipeline/run.py --module "$(basename "$m")" ${{ inputs.live && '--live' || '' }}
+          done
+
+      - name: Test packages in a fake LMS
+        run: |
+          for z in $(git ls-files --others --exclude-standard 'output/**/*.zip'); do
+            python tests/test_scorm.py "$z"
+          done
+
+      # The pull request IS the human review step: reviewers open review.html,
+      # check before/after screens and narration, and merge to approve.
+      - name: Open review pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: training-refresh
+          title: "Training refresh: changed scenes ready for review"
+          body: |
+            Scheduled refresh found changes. Open `output/<module>/<version>/review.html`
+            for before/after screens, then follow `RELEASE.md` to upload to KnowBe4 after merging.
+          add-paths: |
+            state/**
+            output/**
+
+      - name: Keep the bundle as a download
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-release
+          path: output/
+          if-no-files-found: ignore

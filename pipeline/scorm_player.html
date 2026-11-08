@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="__LANG__">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f4f5f7; color: #1d2433; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 22px; margin: 4px 0 14px; }
+  video { width: 100%; border-radius: 8px; background: #000; }
+  .quiz { background: #fff; border: 1px solid #dde1e7; border-radius: 8px; padding: 20px; margin-top: 18px; }
+  .quiz.locked { opacity: .45; pointer-events: none; }
+  .q { margin: 16px 0; } .q p { font-weight: bold; margin: 0 0 8px; }
+  .q label { display: block; padding: 6px 0; cursor: pointer; }
+  button { background: #2c6ecb; color: #fff; border: 0; border-radius: 6px; padding: 10px 18px; font-size: 15px; cursor: pointer; }
+  .result { margin-top: 14px; font-weight: bold; }
+  .ok { color: #1a6a43; } .bad { color: #a32d2d; } .err { color: #a32d2d; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title"></h1>
+  <video id="video" controls playsinline src="video.mp4" poster="poster.jpg"></video>
+  <div class="quiz locked" id="quiz">
+    <h2 id="quiz-title" style="font-size:18px;margin:0"></h2>
+    <p id="quiz-intro"></p>
+    <div id="questions"></div>
+    <button id="submit"></button>
+    <div class="err" id="err"></div>
+    <div class="result" id="result"></div>
+  </div>
+</div>
+<script>
+const S = __STRINGS__;
+const PASS_MARK = __PASS_MARK__;
+
+// --- minimal SCORM 2004 runtime ---
+function findAPI(win) {
+  for (let i = 0; win && i < 10; i++) {
+    if (win.API_1484_11) return win.API_1484_11;
+    if (win.parent && win.parent !== win) { win = win.parent; continue; }
+    win = win.opener;
+  }
+  return null;
+}
+const api = findAPI(window);
+const scorm = {
+  set(k, v) { if (api) api.SetValue(k, String(v)); },
+  get(k) { return api ? api.GetValue(k) : ''; },
+  commit() { if (api) api.Commit(''); }
+};
+let finished = false;
+if (api) {
+  api.Initialize('');
+  if (scorm.get('cmi.completion_status') !== 'completed') scorm.set('cmi.completion_status', 'incomplete');
+  scorm.commit();
+}
+function terminate() { if (api && !finished) { finished = true; scorm.set('cmi.exit', 'suspend'); scorm.commit(); api.Terminate(''); } }
+window.addEventListener('pagehide', terminate);
+
+// --- page ---
+document.getElementById('title').textContent = S.title;
+document.getElementById('quiz-title').textContent = S.quiz.title;
+document.getElementById('quiz-intro').textContent = S.quiz.intro;
+document.getElementById('submit').textContent = S.quiz.submit;
+const qbox = document.getElementById('questions');
+S.questions.forEach((q, i) => {
+  const div = document.createElement('div'); div.className = 'q';
+  div.innerHTML = `<p>${i + 1}. ${q.text}</p>` + Object.entries(q.options).map(([k, v]) =>
+    `<label><input type="radio" name="q${i}" value="${k}"> ${v}</label>`).join('');
+  qbox.appendChild(div);
+});
+
+// Unlock the quiz once the learner has watched (nearly) all of the video.
+const video = document.getElementById('video');
+const quiz = document.getElementById('quiz');
+const saved = parseFloat(scorm.get('cmi.location')) || 0;
+video.addEventListener('loadedmetadata', () => { if (saved > 0 && saved < video.duration) video.currentTime = saved; });
+let lastSave = 0;
+video.addEventListener('timeupdate', () => {
+  if (video.currentTime - lastSave > 10) { lastSave = video.currentTime; scorm.set('cmi.location', video.currentTime.toFixed(0)); scorm.commit(); }
+  if (video.duration && video.currentTime / video.duration >= 0.9) quiz.classList.remove('locked');
+});
+video.addEventListener('ended', () => quiz.classList.remove('locked'));
+
+document.getElementById('submit').onclick = () => {
+  const err = document.getElementById('err');
+  const answers = S.questions.map((q, i) => (document.querySelector(`input[name=q${i}]:checked`) || {}).value);
+  if (answers.some(a => !a)) { err.textContent = S.quiz.answer_all; return; }
+  err.textContent = '';
+  const correct = answers.filter((a, i) => a === S.questions[i].correct).length;
+  const scaled = correct / S.questions.length;
+  const passed = scaled >= PASS_MARK;
+  scorm.set('cmi.score.min', 0); scorm.set('cmi.score.max', S.questions.length);
+  scorm.set('cmi.score.raw', correct); scorm.set('cmi.score.scaled', scaled.toFixed(2));
+  scorm.set('cmi.success_status', passed ? 'passed' : 'failed');
+  scorm.set('cmi.completion_status', passed ? 'completed' : 'incomplete');
+  scorm.commit();
+  const res = document.getElementById('result');
+  res.className = 'result ' + (passed ? 'ok' : 'bad');
+  res.textContent = `${S.quiz.score}: ${correct}/${S.questions.length}. ` + (passed ? S.quiz.passed : S.quiz.failed);
+  document.getElementById('submit').textContent = passed ? S.quiz.submit : S.quiz.retry;
+};
+</script>
+</body>
+</html>

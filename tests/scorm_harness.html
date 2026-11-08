@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SCORM 2004 test harness</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; display: grid; grid-template-columns: 1fr 360px; height: 100vh; }
+  iframe { width: 100%; height: 100%; border: 0; }
+  aside { border-left: 1px solid #ddd; padding: 12px; font-size: 12px; overflow: auto; background: #fafafa; }
+  pre { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<!-- Open as tests/scorm_harness.html?pkg=<path to unzipped package>/index.html via a local web server. -->
+<iframe id="sco"></iframe>
+<aside><b>LMS data (what KnowBe4 would receive)</b><pre id="data"></pre><b>Calls</b><pre id="log"></pre></aside>
+<script>
+const store = {};
+const calls = [];
+function show() {
+  document.getElementById('data').textContent = JSON.stringify(store, null, 2);
+  document.getElementById('log').textContent = calls.join('\n');
+}
+window.API_1484_11 = {
+  Initialize: () => { calls.push('Initialize'); show(); return 'true'; },
+  Terminate: () => { calls.push('Terminate'); show(); return 'true'; },
+  GetValue: k => store[k] || '',
+  SetValue: (k, v) => { store[k] = v; calls.push(`SetValue ${k} = ${v}`); show(); return 'true'; },
+  Commit: () => { calls.push('Commit'); show(); return 'true'; },
+  GetLastError: () => '0', GetErrorString: () => '', GetDiagnostic: () => ''
+};
+window.lmsStore = store;
+document.getElementById('sco').src = new URLSearchParams(location.search).get('pkg');
+</script>
+</body>
+</html>

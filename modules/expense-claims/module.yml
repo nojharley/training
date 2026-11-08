@@ -1,0 +1,71 @@
+# One training module = an ordered list of scenes.
+# Each scene: the browser actions to reach a screen, what to screenshot,
+# and a key into the per-language files (i18n/<lang>.yml) for its narration.
+
+id: expense-claims
+title_key: module_title
+version: 1.0.0
+locales: [en, de]
+app:
+  path: /index.html            # served from demo_app/ by the capture step
+  viewport: {width: 1280, height: 720}
+pass_mark: 0.67                # 2 of 3 quiz answers
+
+synthesia:
+  template_id: REPLACE_WITH_YOUR_TEMPLATE_ID
+  # Variable names as defined in your Synthesia template:
+  script_variable: script
+  image_variable: screenshot
+  title_variable: title
+  avatar_by_locale:            # optional: different presenter per language
+    en: anna_costume1_cameraA
+    de: anna_costume1_cameraA
+
+scenes:
+  - id: s01-dashboard
+    actions: []
+    highlight: "#btn-new-claim"
+    screenshot: viewport
+
+  - id: s02-new-claim
+    actions:
+      - click: "#btn-new-claim"
+    screenshot: viewport
+
+  - id: s03-fill-form
+    actions:
+      - click: "#btn-new-claim"
+      - fill: {selector: "#f-desc", value_key: sample_desc}
+      - fill: {selector: "#f-date", value_key: sample_date}
+      - fill: {selector: "#f-amount", value: "23.50"}
+      - select: {selector: "#f-category", value: travel}
+    screenshot: viewport
+
+  - id: s04-submit
+    actions:
+      - click: "#btn-new-claim"
+      - fill: {selector: "#f-desc", value_key: sample_desc}
+      - fill: {selector: "#f-date", value_key: sample_date}
+      - fill: {selector: "#f-amount", value: "23.50"}
+      - select: {selector: "#f-category", value: travel}
+    highlight: "#btn-submit"
+    screenshot: viewport
+
+  - id: s05-track
+    actions:
+      - click: "#btn-new-claim"
+      - fill: {selector: "#f-desc", value_key: sample_desc}
+      - fill: {selector: "#f-date", value_key: sample_date}
+      - fill: {selector: "#f-amount", value: "23.50"}
+      - select: {selector: "#f-category", value: travel}
+      - click: "#btn-submit"
+      - click: "#btn-back"
+    screenshot: viewport
+
+quiz:
+  - key: q1
+    correct: b
+  - key: q2
+    correct: a
+  - key: q3
+    correct: c

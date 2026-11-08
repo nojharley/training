@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Expensly (demo)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "DejaVu Sans", Arial, sans-serif; background: #f4f5f7; color: #1d2433; }
+  header { background: #1f3a5f; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+  header .brand { font-weight: bold; font-size: 18px; }
+  header .user { font-size: 13px; opacity: .85; }
+  main { padding: 28px 24px; max-width: 900px; }
+  h1 { font-size: 22px; margin: 0 0 18px; }
+  .card { background: #fff; border: 1px solid #dde1e7; border-radius: 8px; padding: 20px; margin-bottom: 18px; }
+  .btn { display: inline-block; border: 0; border-radius: 6px; padding: 10px 18px; font-size: 14px; cursor: pointer; background: #2c6ecb; color: #fff; }
+  .btn.secondary { background: #e7eaf0; color: #1d2433; }
+  .btn.v2 { background: #1a7f5a; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #eceef2; }
+  th { color: #5b6475; font-weight: normal; font-size: 12px; text-transform: uppercase; }
+  .status { padding: 3px 8px; border-radius: 10px; font-size: 12px; }
+  .status.paid { background: #e3f4ea; color: #1a6a43; }
+  .status.waiting { background: #fff3d6; color: #8a5a00; }
+  label { display: block; font-size: 13px; color: #5b6475; margin: 12px 0 4px; }
+  input, select { width: 100%; padding: 9px 10px; border: 1px solid #c9ced8; border-radius: 6px; font-size: 14px; }
+  .row { display: flex; gap: 16px; } .row > div { flex: 1; }
+  .actions { margin-top: 20px; display: flex; gap: 10px; }
+  .notice { background: #e3f4ea; border: 1px solid #b7e0c7; color: #1a6a43; padding: 14px 16px; border-radius: 8px; margin-bottom: 18px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header><span class="brand">Expensly</span><span class="user" data-i18n="user"></span></header>
+<main>
+  <section id="screen-dashboard">
+    <h1 data-i18n="dashboard_title"></h1>
+    <div class="card">
+      <p data-i18n="dashboard_intro"></p>
+      <button class="btn" id="btn-new-claim" data-i18n="new_claim"></button>
+    </div>
+    <div class="card" id="claims-table">
+      <table>
+        <thead><tr><th data-i18n="col_date"></th><th data-i18n="col_desc"></th><th data-i18n="col_amount"></th><th data-i18n="col_status"></th></tr></thead>
+        <tbody id="claims-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="screen-form" class="hidden">
+    <h1 data-i18n="form_title"></h1>
+    <div class="card" id="claim-form">
+      <label for="f-desc" data-i18n="field_desc"></label>
+      <input id="f-desc">
+      <div class="row">
+        <div><label for="f-date" data-i18n="field_date"></label><input id="f-date"></div>
+        <div><label for="f-amount" data-i18n="field_amount"></label><input id="f-amount"></div>
+      </div>
+      <label for="f-category" data-i18n="field_category"></label>
+      <select id="f-category">
+        <option value="" data-i18n="cat_choose"></option>
+        <option value="travel" data-i18n="cat_travel"></option>
+        <option value="meals" data-i18n="cat_meals"></option>
+        <option value="equipment" data-i18n="cat_equipment"></option>
+      </select>
+      <div class="actions">
+        <button class="btn" id="btn-submit"></button>
+        <button class="btn secondary" id="btn-cancel" data-i18n="cancel"></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-done" class="hidden">
+    <div class="notice" id="confirmation"></div>
+    <button class="btn secondary" id="btn-back" data-i18n="back"></button>
+  </section>
+</main>
+
+<script>
+const params = new URLSearchParams(location.search);
+const lang = params.get('lang') || 'en';
+const version = params.get('v') || '1';
+document.documentElement.lang = lang;
+
+const T = {
+  en: {
+    user: 'Signed in as Alex Demo', dashboard_title: 'My expense claims',
+    dashboard_intro: 'Claim back money you have spent on company business.',
+    new_claim: 'New claim', col_date: 'Date', col_desc: 'Description', col_amount: 'Amount', col_status: 'Status',
+    form_title: 'New expense claim', field_desc: 'Description', field_date: 'Date of expense',
+    field_amount: 'Amount (GBP)', field_category: 'Category', cat_choose: 'Choose a category',
+    cat_travel: 'Travel', cat_meals: 'Meals', cat_equipment: 'Equipment', cancel: 'Cancel',
+    submit_v1: 'Submit claim', submit_v2: 'Send for approval',
+    done_v1: 'Your claim has been submitted.',
+    done_v2: 'Your claim has been sent to your manager for approval. You will get an email when it is approved.',
+    back: 'Back to my claims', paid: 'Paid', waiting: 'Awaiting approval',
+    seed: [['02/10/2026', 'Train to Leeds client meeting', '£48.20'], ['14/09/2026', 'Team lunch', '£62.00']]
+  },
+  de: {
+    user: 'Angemeldet als Alex Demo', dashboard_title: 'Meine Spesenabrechnungen',
+    dashboard_intro: 'Lassen Sie sich geschäftliche Ausgaben erstatten.',
+    new_claim: 'Neue Abrechnung', col_date: 'Datum', col_desc: 'Beschreibung', col_amount: 'Betrag', col_status: 'Status',
+    form_title: 'Neue Spesenabrechnung', field_desc: 'Beschreibung', field_date: 'Datum der Ausgabe',
+    field_amount: 'Betrag (GBP)', field_category: 'Kategorie', cat_choose: 'Kategorie auswählen',
+    cat_travel: 'Reise', cat_meals: 'Verpflegung', cat_equipment: 'Ausstattung', cancel: 'Abbrechen',
+    submit_v1: 'Abrechnung einreichen', submit_v2: 'Zur Genehmigung senden',
+    done_v1: 'Ihre Abrechnung wurde eingereicht.',
+    done_v2: 'Ihre Abrechnung wurde zur Genehmigung an Ihre Führungskraft gesendet. Sie erhalten eine E-Mail, sobald sie genehmigt ist.',
+    back: 'Zurück zu meinen Abrechnungen', paid: 'Bezahlt', waiting: 'Wartet auf Genehmigung',
+    seed: [['02.10.2026', 'Zugfahrt zum Kundentermin Leeds', '£48.20'], ['14.09.2026', 'Teamessen', '£62.00']]
+  }
+};
+const t = T[lang] || T.en;
+
+document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t[el.dataset.i18n]; });
+const submit = document.getElementById('btn-submit');
+submit.textContent = version === '2' ? t.submit_v2 : t.submit_v1;
+if (version === '2') submit.classList.add('v2');
+
+const rows = t.seed.map(r => ({ date: r[0], desc: r[1], amount: r[2], status: 'paid' }));
+function renderTable() {
+  document.getElementById('claims-body').innerHTML = rows.map(r =>
+    `<tr><td>${r.date}</td><td>${r.desc}</td><td>${r.amount}</td><td><span class="status ${r.status}">${t[r.status]}</span></td></tr>`).join('');
+}
+function show(id) {
+  ['dashboard', 'form', 'done'].forEach(s => document.getElementById('screen-' + s).classList.toggle('hidden', s !== id));
+}
+renderTable();
+document.getElementById('btn-new-claim').onclick = () => show('form');
+document.getElementById('btn-cancel').onclick = () => show('dashboard');
+submit.onclick = () => {
+  rows.unshift({ date: document.getElementById('f-date').value, desc: document.getElementById('f-desc').value,
+                 amount: '£' + document.getElementById('f-amount').value, status: 'waiting' });
+  renderTable();
+  document.getElementById('confirmation').textContent = version === '2' ? t.done_v2 : t.done_v1;
+  show('done');
+};
+document.getElementById('btn-back').onclick = () => show('dashboard');
+</script>
+</body>
+</html>
