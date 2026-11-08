@@ -2,4 +2,3 @@ work/
 __pycache__/
 *.test.png
 .env
-output/
