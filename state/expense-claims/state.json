@@ -1,0 +1,59 @@
+{
+  "build": 1,
+  "scenes": {
+    "en": {
+      "s01-dashboard": {
+        "render_key": "64fdde43d0d55758",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\en\\s01-dashboard.mp4",
+        "text_hash": "5ddc5e9ba31ad189"
+      },
+      "s02-new-claim": {
+        "render_key": "4d89f1ccb7d9605a",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\en\\s02-new-claim.mp4",
+        "text_hash": "c3fd8498377e2d55"
+      },
+      "s03-fill-form": {
+        "render_key": "7a729afaddd6c112",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\en\\s03-fill-form.mp4",
+        "text_hash": "85c3b1924659e087"
+      },
+      "s04-submit": {
+        "render_key": "b7a8b1c8aae7105a",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\en\\s04-submit.mp4",
+        "text_hash": "e171f735c0e9bad8"
+      },
+      "s05-track": {
+        "render_key": "9a97c40ac60380e6",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\en\\s05-track.mp4",
+        "text_hash": "dafc507f4d8eb613"
+      }
+    },
+    "de": {
+      "s01-dashboard": {
+        "render_key": "bc949e6d3b855b44",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\de\\s01-dashboard.mp4",
+        "text_hash": "08ac31dc19cc782d"
+      },
+      "s02-new-claim": {
+        "render_key": "5c4715bae144a83a",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\de\\s02-new-claim.mp4",
+        "text_hash": "47f40fb1e5a7e655"
+      },
+      "s03-fill-form": {
+        "render_key": "7dc5d60d5d334858",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\de\\s03-fill-form.mp4",
+        "text_hash": "3c9d8c998f1d0345"
+      },
+      "s04-submit": {
+        "render_key": "03ea8aa96bd8fc96",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\de\\s04-submit.mp4",
+        "text_hash": "bf9fd827245d37c6"
+      },
+      "s05-track": {
+        "render_key": "8e09b2533e4c2b3b",
+        "clip": "C:\\training\\work\\expense-claims\\clips\\de\\s05-track.mp4",
+        "text_hash": "60faf85fe902232c"
+      }
+    }
+  }
+}
