@@ -3,6 +3,32 @@
 Turns an application's screens into narrated, multilingual training for KnowBe4,
 and refreshes it on a schedule when the app changes.
 
+## What it does
+
+Keeping "how to use our app" training current is tedious: every UI change means
+re-recording screens, re-voicing narration and re-uploading the course in every
+language. This pipeline automates that loop.
+
+1. **Captures the app.** A headless browser (Playwright) walks through each step
+   of a process, such as submitting an expense claim, in every language, and
+   screenshots each screen with the relevant control highlighted.
+2. **Spots what changed.** Each screenshot is compared pixel by pixel against
+   the last approved version, so only screens that actually changed move on.
+3. **Narrates the changed scenes.** Each changed scene becomes a short video of
+   an AI presenter (Synthesia) talking over the screenshot, using the script
+   for that language. Unchanged scenes reuse their existing clips, so you don't
+   pay to re-render them.
+4. **Packages the course.** The clips are stitched into one video per language
+   and wrapped in a SCORM 2004 package with a short quiz that reports pass or
+   fail to the LMS, ready to upload to KnowBe4.
+5. **Hands over for review.** Each release gets a before/after review page and
+   an upload checklist. A weekly GitHub Actions run opens a pull request, and
+   merging it approves the new baseline.
+
+Course content lives in YAML: the steps and quiz answers in `module.yml`, and
+the narration and quiz text for each language in `i18n/<lang>.yml`. Adding a
+language means adding one file.
+
 ```
 demo app ──► capture (Playwright, per language) ──► diff vs approved screens
                                                         │ only changed scenes
@@ -28,6 +54,11 @@ python pipeline/run.py --module expense-claims --app-version 2 # simulate a UI r
 python tests/test_scorm.py output/expense-claims/v1.0.2/expense-claims_de_v1.0.2.zip
 python pipeline/report.py --current v1.0.2
 ```
+
+On Windows, install ffmpeg with `winget install Gyan.FFmpeg`, or unzip the
+essentials build from https://www.gyan.dev/ffmpeg/builds/ and add its `bin`
+folder to your PATH. Clip text uses DejaVu Sans on Linux and Arial on Windows
+and macOS.
 
 The `--app-version 2` run is the point of the demo: the demo app renames and
 recolours its submit button, the pipeline spots that 3 of 5 scenes changed in
