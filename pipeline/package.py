@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from common import OUTPUT, ROOT, WORK, log, scene_state
+from common import FONT_BOLD, OUTPUT, ROOT, WORK, log, scene_state
 
 KNOWBE4_MAX_BYTES = 1024 ** 3
 PLAYER = (ROOT / "pipeline" / "scorm_player.html").read_text(encoding="utf-8")
@@ -73,7 +73,7 @@ def _artwork(title, dest):
     """Square thumbnail KnowBe4 shows learners before they start."""
     img = Image.new("RGB", (600, 600), (31, 58, 95))
     d = ImageDraw.Draw(img)
-    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 46)
+    font = ImageFont.truetype(FONT_BOLD, 46)
     words, lines, line = title.split(), [], ""
     for w in words:
         if d.textlength(f"{line} {w}".strip(), font=font) > 500:

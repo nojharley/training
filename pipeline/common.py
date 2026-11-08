@@ -14,6 +14,22 @@ WORK = ROOT / "work"
 OUTPUT = ROOT / "output"
 
 
+def _first_font(*names):
+    """First font file that exists on this machine (Linux DejaVu, Windows, macOS)."""
+    windir = Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts"
+    for name in names:
+        p = Path(name) if os.path.isabs(name) else windir / name
+        if p.exists():
+            return str(p)
+    raise FileNotFoundError(f"none of these fonts found: {names}")
+
+
+FONT = _first_font("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "arial.ttf",
+                   "/Library/Fonts/Arial.ttf", "/System/Library/Fonts/Supplemental/Arial.ttf")
+FONT_BOLD = _first_font("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", "arialbd.ttf",
+                        "/Library/Fonts/Arial Bold.ttf", "/System/Library/Fonts/Supplemental/Arial Bold.ttf")
+
+
 def load_module(module_id):
     mdir = MODULES / module_id
     module = yaml.safe_load((mdir / "module.yml").read_text(encoding="utf-8"))

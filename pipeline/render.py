@@ -15,12 +15,10 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
-from common import WORK, env, log, scene_state, sha
+from common import FONT, FONT_BOLD, WORK, env, log, scene_state, sha
 
 API = "https://api.synthesia.io/v2"
 UPLOAD_API = "https://upload.api.synthesia.io/v2"
-FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 
 # ---------- live Synthesia ----------
