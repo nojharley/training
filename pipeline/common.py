@@ -78,3 +78,18 @@ def log(msg):
 def env(name, default=None):
     v = os.environ.get(name)
     return v if v else default
+
+
+def repo_url():
+    """https://github.com/<owner>/<repo>, from GitHub Actions env or the git remote; None if unknown."""
+    if os.environ.get("GITHUB_REPOSITORY"):
+        return f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{os.environ['GITHUB_REPOSITORY']}"
+    import subprocess
+    try:
+        url = subprocess.run(["git", "-C", str(ROOT), "remote", "get-url", "origin"],
+                             capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    if "github.com" not in url:
+        return None
+    return "https://github.com/" + url.split("github.com", 1)[1].lstrip(":/").removesuffix(".git")

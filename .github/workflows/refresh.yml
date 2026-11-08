@@ -45,6 +45,15 @@ jobs:
             python tests/test_scorm.py "$z"
           done
 
+      # Public review site (GitHub Pages): the new version shows as "Pending review".
+      # Built before the PR step, which commits output/ to the review branch.
+      - name: Build review site
+        run: python pipeline/pages.py --out site
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
       # The pull request IS the human review step: reviewers open review.html,
       # check before/after screens and narration, and merge to approve.
       - name: Open review pull request
@@ -53,8 +62,12 @@ jobs:
           branch: training-refresh
           title: "Training refresh: changed scenes ready for review"
           body: |
-            Scheduled refresh found changes. Open `output/<module>/<version>/review.html`
-            for before/after screens, then follow `RELEASE.md` to upload to KnowBe4 after merging.
+            Scheduled refresh found changes.
+
+            **Review online:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+            (open the version marked *Pending review*), or open `output/<module>/<version>/review.html`.
+            Check the before/after screens and narration, then merge this pull request to approve.
+            Merging publishes a GitHub Release; then follow `RELEASE.md` to upload to KnowBe4.
           add-paths: |
             state/**
             output/**
@@ -65,3 +78,19 @@ jobs:
           name: training-release
           path: output/
           if-no-files-found: ignore
+
+  pages:
+    needs: refresh
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

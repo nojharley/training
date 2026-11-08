@@ -4,6 +4,7 @@ name: Publish release
 # turns each release bundle in output/ into a GitHub Release: SCORM zips for
 # KnowBe4, a standalone MP4 per language, the artwork and the release notes.
 # Releases that already exist are skipped, so re-running is safe.
+# It then redeploys the public review site (GitHub Pages).
 
 on:
   push:
@@ -61,3 +62,33 @@ jobs:
               --target "$GITHUB_SHA"
             echo "published $tag"
           done
+
+      # Refresh the public site so the merged version shows as Approved.
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Build review site
+        run: |
+          pip install pyyaml
+          python pipeline/pages.py --out site
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  pages:
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

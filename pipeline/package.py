@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from common import FONT_BOLD, OUTPUT, ROOT, WORK, log, scene_state
+from common import FONT_BOLD, OUTPUT, ROOT, WORK, log, repo_url, scene_state
 
 KNOWBE4_MAX_BYTES = 1024 ** 3
 PLAYER = (ROOT / "pipeline" / "scorm_player.html").read_text(encoding="utf-8")
@@ -153,18 +153,7 @@ def _approve_url():
     locally from the git remote. REVIEW_BRANCH matches the workflow's PR branch.
     """
     branch = os.environ.get("REVIEW_BRANCH", "training-refresh")
-    repo = None
-    if os.environ.get("GITHUB_REPOSITORY"):
-        repo = f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com')}/{os.environ['GITHUB_REPOSITORY']}"
-    else:
-        try:
-            url = subprocess.run(["git", "-C", str(ROOT), "remote", "get-url", "origin"],
-                                 capture_output=True, text=True, check=True).stdout.strip()
-            if "github.com" in url:
-                path = url.split("github.com", 1)[1].lstrip(":/").removesuffix(".git")
-                repo = f"https://github.com/{path}"
-        except (OSError, subprocess.CalledProcessError):
-            pass
+    repo = repo_url()
     return f"{repo}/pulls?q=is%3Apr+is%3Aopen+head%3A{branch}" if repo else None
 
 

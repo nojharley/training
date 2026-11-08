@@ -138,6 +138,16 @@ already released are skipped, so it is safe to re-run from the Actions tab.
 From there the KnowBe4 upload is manual (see `RELEASE.md`): KnowBe4 has no API
 for uploading content.
 
+### Public review site
+Both workflows deploy a site to GitHub Pages (`https://<owner>.github.io/<repo>/`,
+for this repo https://nojharley.github.io/training/), built by `pipeline/pages.py`
+from `output/`. It lists every version newest first with its review page,
+playable videos and SCORM zips. A version waiting in a review pull request shows
+as **Pending review** with a *Review and approve* button; merged versions show as
+**Approved** and link to their GitHub Release. Build it locally with
+`python pipeline/pages.py` (writes `site/`). The site is public: don't point the
+pipeline at an internal app while Pages is on.
+
 ## Known prototype limits
 - Translations in `de.yml` are starter machine translations; a native speaker must review them.
 - One avatar per language; no per-scene presenter changes.
